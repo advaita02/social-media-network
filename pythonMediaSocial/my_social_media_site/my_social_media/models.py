@@ -88,7 +88,7 @@ class Survey(BaseModel):
         return self.name
 
 
-class Question(BaseModel):
+class Question(models.Model):
     content = models.TextField(max_length=100)
     Survey = models.ForeignKey(Survey, on_delete=models.CASCADE,
                                related_query_name='questions')
@@ -97,9 +97,11 @@ class Question(BaseModel):
         return self.name
 
 
-class Answer(BaseModel):
+class Answer(models.Model):
     content = models.CharField(max_length=50)
     quantity = models.IntegerField(default=0)
+    questions = models.ForeignKey(Question, on_delete=models.CASCADE,
+                                  related_query_name='answers')
 
     def __str__(self):
         return self.name
