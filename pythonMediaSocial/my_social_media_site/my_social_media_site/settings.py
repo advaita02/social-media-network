@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'my_social_media.apps.MySocialMediaConfig'
 ]
 
 MIDDLEWARE = [
@@ -75,8 +76,11 @@ WSGI_APPLICATION = 'my_social_media_site.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'social_media_network',
+        'USER': 'root',
+        'PASSWORD': '12345678',
+        'HOST': ''
     }
 }
 
@@ -121,3 +125,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'my_social_media.User'
+
+# cloudinary
+import cloudinary
+
+cloudinary.config(
+    cloud_name="dcezhzozn",
+    api_key="342611522918498",
+    api_secret="27wSws5sGd4sMAkutPAT9YH5EgA"
+)
