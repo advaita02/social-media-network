@@ -37,8 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'my_social_media.apps.MySocialMediaConfig'
+    'my_social_media.apps.MySocialMediaConfig',
+    'ckeditor',
+    'ckeditor_uploader',
+    'drf_yasg',
 ]
+
+CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'social_media_network',
         'USER': 'root',
-        'PASSWORD': '12345678',
+        'PASSWORD': '123456',
         'HOST': ''
     }
 }
