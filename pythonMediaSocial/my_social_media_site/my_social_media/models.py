@@ -1,4 +1,6 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 # Create your models here.
@@ -11,90 +13,91 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Group(BaseModel):
+class Membership(BaseModel):
     group_name = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.name
+        return self.group_name
 
 
-class User(BaseModel):
-    name = models.CharField(max_length=100)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    cover_photo = models.ImageField(upload_to='cover_photos/', null=True, blank=True)
+class User(AbstractUser):
+    avatar = CloudinaryField(null=True)
+    cover_photo = CloudinaryField(null=True)
     date_of_birth = models.DateField(null=True, blank=True)
     number_phone = models.CharField(max_length=20, null=True, blank=True)
-    user_role = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
 
     # many-to-many voi Group
-    groups = models.ManyToManyField(Group)
-    posts_comments = models.ManyToManyField('Post', through='Comment')
-    posts_likes = models.ManyToManyField('Post', through='Like')
-
-    def __str__(self):
-        return self.name
+    membership = models.ManyToManyField(Membership, related_name='users', blank=True)
+    posts_comments = models.ManyToManyField('Post', through='Comment', related_name='comments_users')
+    posts_likes = models.ManyToManyField('Post', through='Like', related_name='likes_users')
 
 
 # many-to-many user and post
 class Comment(BaseModel):
     comment = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_comments')  # Thêm foreign key tới User
+    post = models.ForeignKey('Post', on_delete=models.CASCADE,
+                             related_name='post_comments')  # Thêm foreign key tới Post
 
     def __str__(self):
-        return self.name
+        return self.comment
 
 
 class Like(BaseModel):
-    type_of_like = models.ForeignKey('TypeOfLike', on_delete=models.CASCADE,
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_likes')  # Thêm foreign key tới User
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='post_likes')  # Thêm foreign key tới Post
+    type_of_like = models.ForeignKey('LikeType', on_delete=models.CASCADE,
                                      related_query_name='Likes')
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        unique_together = [['user', 'post']]  # 1 like với mỗi bài post
 
 
-class TypeOfPost(models.Model):
+class PostType(models.Model):
     name_type = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.name_type
 
 
-class TypeOfLike(models.Model):
+class LikeType(models.Model):
     name_type = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.name_type
 
 
 class Post(BaseModel):
     title = models.CharField(max_length=100)
     content = models.TextField()
-    type_of_post = models.ForeignKey(TypeOfPost, on_delete=models.CASCADE,
+    type_of_post = models.ForeignKey(PostType, on_delete=models.CASCADE,
                                      related_query_name='posts')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_query_name='users')
+    membership = models.ManyToManyField(Membership, related_name='membership_posts', blank=True)
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 # Survey
 class Survey(BaseModel):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True, default='')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                   related_query_name='surveys')
 
     def __str__(self):
-        return self.name
+        return self.title
 
 
 class Question(models.Model):
     content = models.TextField(max_length=100)
-    Survey = models.ForeignKey(Survey, on_delete=models.CASCADE,
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE,
                                related_query_name='questions')
 
     def __str__(self):
-        return self.name
+        return self.content
 
 
 class Answer(models.Model):
@@ -104,5 +107,5 @@ class Answer(models.Model):
                                   related_query_name='answers')
 
     def __str__(self):
-        return self.name
+        return self.content
 # kết thúc phần Survey
