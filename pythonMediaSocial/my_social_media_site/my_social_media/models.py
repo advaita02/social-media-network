@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from cloudinary.models import CloudinaryField
+from ckeditor_uploader.fields import RichTextUploadingField
+from ckeditor.fields import RichTextField
+
 
 
 # Create your models here.
@@ -10,6 +13,14 @@ class BaseModel(models.Model):
     active = models.BooleanField(default=True)
 
     class Meta:  # xem class BaseModel la lop truu tuong
+        abstract = True
+
+
+class Interaction(BaseModel):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+
+    class Meta:
         abstract = True
 
 
@@ -33,19 +44,14 @@ class User(AbstractUser):
 
 
 # many-to-many user and post
-class Comment(BaseModel):
+class Comment(Interaction):
     comment = models.TextField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_comments')  # Thêm foreign key tới User
-    post = models.ForeignKey('Post', on_delete=models.CASCADE,
-                             related_name='post_comments')  # Thêm foreign key tới Post
 
     def __str__(self):
         return self.comment
 
 
-class Like(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_likes')  # Thêm foreign key tới User
-    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='post_likes')  # Thêm foreign key tới Post
+class Like(Interaction):
     type_of_like = models.ForeignKey('LikeType', on_delete=models.CASCADE,
                                      related_query_name='Likes')
 
@@ -69,7 +75,7 @@ class LikeType(models.Model):
 
 class Post(BaseModel):
     title = models.CharField(max_length=100)
-    content = models.TextField()
+    content = RichTextField()
     type_of_post = models.ForeignKey(PostType, on_delete=models.CASCADE,
                                      related_query_name='posts')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -83,7 +89,7 @@ class Post(BaseModel):
 # Survey
 class Survey(BaseModel):
     title = models.CharField(max_length=100)
-    description = models.TextField(null=True, blank=True, default='')
+    description = RichTextField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_query_name='surveys')
 
