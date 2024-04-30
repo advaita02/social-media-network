@@ -1,6 +1,9 @@
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User, Post, Like, Comment, Membership, Survey, Question, Answer, PostType, LikeType
+from django import forms
+
 
 class CustomUserAdmin(UserAdmin):
     model = User
@@ -9,7 +12,8 @@ class CustomUserAdmin(UserAdmin):
     filter_horizontal = ()
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name','email', 'date_of_birth', 'number_phone', 'avatar', 'cover_photo')}),
+        ('Personal info',
+         {'fields': ('first_name', 'last_name', 'email', 'date_of_birth', 'number_phone', 'avatar', 'cover_photo')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Membership', {'fields': ('membership',)}),
@@ -21,9 +25,20 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
+
+class PostForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditorUploadingWidget)
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+class PostAdmin(admin.ModelAdmin):
+    form = PostForm
+
+
 # Đăng ký CustomUserAdmin với trang admin của Django
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(Post)
+admin.site.register(Post, PostAdmin)
 admin.site.register(Like)
 admin.site.register(Comment)
 admin.site.register(Membership)
