@@ -14,23 +14,25 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('username', 'password')}),
         ('Personal info',
          {'fields': ('first_name', 'last_name', 'email', 'date_of_birth', 'number_phone', 'avatar', 'cover_photo')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        # ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Membership', {'fields': ('membership',)}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2', 'avatar', 'cover_photo'),
+            'fields': ('username', 'email', 'password1', 'password2', 'membership', 'avatar', 'cover_photo'),
         }),
     )
 
 
 class PostForm(forms.ModelForm):
     content = forms.CharField(widget=CKEditorUploadingWidget)
+
     class Meta:
         model = Post
         fields = '__all__'
+
 
 class PostAdmin(admin.ModelAdmin):
     form = PostForm
