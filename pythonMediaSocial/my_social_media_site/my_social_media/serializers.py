@@ -31,5 +31,5 @@ class PostSerializer(ModelSerializer):
         model = Post
         fields = '__all__'
 
-    # def create(self, validated_data):
-    #     return Post.objects.create(**validated_data)
+    def create(self, validated_data):
+        return Post.objects.create(**validated_data)
