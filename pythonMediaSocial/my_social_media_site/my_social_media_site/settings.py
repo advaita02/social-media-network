@@ -41,9 +41,11 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'drf_yasg',
+    'rest_framework',
 ]
 
 CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
+MEDIA_ROOT = '%s/my_social_media/static/' % BASE_DIR
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -84,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'social_media_network',
         'USER': 'root',
-        'PASSWORD': '12345678',
+        'PASSWORD': '123456',
         'HOST': ''
     }
 }

@@ -5,7 +5,6 @@ from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
 
 
-
 # Create your models here.
 class BaseModel(models.Model):
     created_date = models.DateField(auto_now_add=True, null=True)
