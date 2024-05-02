@@ -11,7 +11,21 @@ class LikeTypeSerializer(ModelSerializer):
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar', 'cover_photo', 'membership']
+        fields = ['first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar',
+                  'cover_photo']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
+
+    def create(self, validated_data):
+        data = validated_data.copy()
+        user = User(**data)
+        user.set_password(data['password'])
+        user.save()
+
+        return user
 
 
 class CommentSerializer(ModelSerializer):
