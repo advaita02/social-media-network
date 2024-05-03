@@ -58,6 +58,7 @@ class Comment(Interaction):
 class Like(Interaction):
     type_of_like = models.ForeignKey('LikeType', on_delete=models.CASCADE,
                                      related_query_name='Likes')
+    active = models.BooleanField(default=True)  # thêm active để check, tất nhiên là mặc định là true
 
     class Meta:
         unique_together = [['user', 'post']]  # 1 like với mỗi bài post

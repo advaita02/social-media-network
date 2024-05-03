@@ -1,3 +1,4 @@
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from .models import LikeType, Post, User, Comment, Like
 
@@ -29,9 +30,11 @@ class UserSerializer(ModelSerializer):
 
 
 class CommentSerializer(ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ['id', 'comment', 'user']
 
 
 class LikeSerializer(ModelSerializer):
@@ -47,3 +50,12 @@ class PostSerializer(ModelSerializer):
 
     def create(self, validated_data):
         return Post.objects.create(**validated_data)
+
+
+class PostDetailsSerializer(PostSerializer):
+    liked = serializers.SerializerMethodField()
+
+    def get_liked(self, request, post):
+        request = self.context.get('request')
+        if request.user.is_authenticated:
+            return post.like_set.filter(active=True).exist()
