@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-p8((zo8c-sebe*l42tktoz=0*e76-moim^gfh=z=)w)zr!2-bs
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -42,7 +40,14 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'drf_yasg',
     'rest_framework',
+    'oauth2_provider'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
 
 CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
 MEDIA_ROOT = '%s/my_social_media/static/' % BASE_DIR
@@ -77,7 +82,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'my_social_media_site.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -90,7 +94,6 @@ DATABASES = {
         'HOST': ''
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -110,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -121,7 +123,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -143,3 +144,6 @@ cloudinary.config(
     api_key="342611522918498",
     api_secret="27wSws5sGd4sMAkutPAT9YH5EgA"
 )
+
+CLIENT_ID = '3x70uoPyKasb9OSH7OvxJap3sbyt9YaE8wbLwZSO'
+CLIENT_SECRET = 'odgeSH8anSeBy83jx1FavatMtIDDsEtTGtRoOdqykTdSZRWTdHPPRCcNMXTdTi9KC5vKhbhQClvbhe0psY0eb8z8zqg2hi7Ad3vD8W5uuXMSGHLAXswZYhxRGblC0gtu'

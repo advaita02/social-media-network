@@ -3,6 +3,8 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 
 # Create your models here.
@@ -35,6 +37,9 @@ class User(AbstractUser):
     cover_photo = CloudinaryField(null=True)
     date_of_birth = models.DateField(null=True, blank=True)
     number_phone = models.CharField(max_length=20, null=True, blank=True)
+    # cai nay la override cai truong cua AbstractUser
+    is_active = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
 
     # many-to-many voi Group
     membership = models.ManyToManyField(Membership, related_name='users', blank=True)
@@ -53,6 +58,7 @@ class Comment(Interaction):
 class Like(Interaction):
     type_of_like = models.ForeignKey('LikeType', on_delete=models.CASCADE,
                                      related_query_name='Likes')
+    active = models.BooleanField(default=True)  # thêm active để check, tất nhiên là mặc định là true
 
     class Meta:
         unique_together = [['user', 'post']]  # 1 like với mỗi bài post
@@ -113,4 +119,12 @@ class Answer(models.Model):
 
     def __str__(self):
         return self.content
+
+
 # kết thúc phần Survey
+
+# cái phương thức ở dưới để nếu đăng ký admin, thì active=True, còn user thông thường đăng ký thì action=False
+@receiver(pre_save, sender=User)
+def update_is_active(sender, instance, **kwargs):
+    if instance.is_staff and not instance.is_active:
+        instance.is_active = True
