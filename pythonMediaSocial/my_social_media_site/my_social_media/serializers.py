@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
 from .models import LikeType, Post, User, Comment, Like
 
@@ -6,7 +7,42 @@ from .models import LikeType, Post, User, Comment, Like
 class LikeTypeSerializer(ModelSerializer):
     class Meta:
         model = LikeType
-        fields = '__all__'
+        fields = ['name_type']
+
+
+class LikeSerializer(ModelSerializer):
+    type_of_like = LikeTypeSerializer()
+
+    class Meta:
+        model = Like
+        fields = ['user', 'type_of_like']
+
+
+class UserPostLikeSerializer(ModelSerializer):
+    avatar_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'avatar_url']
+
+    def get_avatar_url(self, obj):
+        if obj.avatar:
+            avatar_url = obj.avatar.url
+            return avatar_url
+        else:
+            return None
+
+
+class PostSerializer(ModelSerializer):
+    created_by = UserPostLikeSerializer()
+    posts_likes = LikeSerializer(source='post_likes', many=True)
+
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'created_by', 'membership', 'type_of_post', 'posts_likes']
+
+    def create(self, validated_data):
+        return Post.objects.create(**validated_data)
 
 
 class UserSerializer(ModelSerializer):
@@ -37,21 +73,6 @@ class CommentSerializer(ModelSerializer):
         fields = ['id', 'comment', 'user']
 
 
-class LikeSerializer(ModelSerializer):
-    class Meta:
-        model = Like
-        fields = '__all__'
-
-
-class PostSerializer(ModelSerializer):
-    class Meta:
-        model = Post
-        fields = '__all__'
-
-    def create(self, validated_data):
-        return Post.objects.create(**validated_data)
-
-
 class PostDetailsSerializer(PostSerializer):
     liked = serializers.SerializerMethodField()
 
@@ -59,3 +80,7 @@ class PostDetailsSerializer(PostSerializer):
         request = self.context.get('request')
         if request.user.is_authenticated:
             return post.like_set.filter(active=True).exist()
+
+    class Meta:
+        model = Post
+        fields = PostSerializer.Meta.fields + ['liked']
