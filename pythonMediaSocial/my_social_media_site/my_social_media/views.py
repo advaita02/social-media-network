@@ -10,8 +10,6 @@ from django.shortcuts import get_object_or_404
 
 
 # from my_social_media import serializers
-
-
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView,
                   generics.RetrieveAPIView, generics.CreateAPIView):
     queryset = User.objects.all()
