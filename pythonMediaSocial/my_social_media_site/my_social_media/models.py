@@ -33,8 +33,8 @@ class Membership(BaseModel):
 
 
 class User(AbstractUser):
-    avatar = CloudinaryField(null=True)
-    cover_photo = CloudinaryField(null=True)
+    avatar = CloudinaryField(null=True, blank=True)
+    cover_photo = CloudinaryField(null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     number_phone = models.CharField(max_length=20, null=True, blank=True)
     # cai nay la override cai truong cua AbstractUser
