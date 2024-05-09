@@ -14,10 +14,17 @@ class UserSerializer(ModelSerializer):
         else:
             return None
 
+    def get_cover_photo_url(self, obj):
+        if obj.cover_photo:
+            cover_photo_url = obj.cover_photo.url
+            return cover_photo_url
+        else:
+            return None
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar_url',
-                  'cover_photo']
+                  'cover_photo_url']
         extra_kwargs = {
             'password': {
                 'write_only': True
