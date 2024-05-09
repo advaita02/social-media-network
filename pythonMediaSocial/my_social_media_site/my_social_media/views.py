@@ -3,31 +3,37 @@ from rest_framework import viewsets, permissions, status, generics, parsers
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from .models import LikeType, Post, Comment, Like, User, Membership, PostType
-from .serializers import LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer, UserSerializer, \
-    PostDetailsSerializer
+from .serializers import (LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer,
+                          UserSerializer, PostDetailsSerializer, UserProfileSerializer)
 from .perms import OwnerPermission
 from django.shortcuts import get_object_or_404
 
 
 # from my_social_media import serializers
-class UserViewSet(viewsets.ViewSet, generics.ListAPIView,
-                  generics.RetrieveAPIView, generics.CreateAPIView):
+class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     parser_classes = [parsers.MultiPartParser]
 
+    @action(detail=True)
+    #  xem profile user
+    def profile(self, request, pk=None):
+        user = self.get_object()
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data)
+
     @action(methods=['get'], detail=True)
     def posts(self, request, pk):
-        posts = self.get_object().post_set.filter(active=True).all()
+        user = self.get_object()
+        posts = user.post_set.filter(active=True).all()
 
-        return Response(PostSerializer(posts, many=True,
-                                       context={'request': request}).data,
+        return Response(PostDetailsSerializer(posts, many=True,
+                                              context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
     def get_permissions(self):
-        if self.action.__eq__('current_user'):
+        if self.action == 'current_user':
             return [permissions.IsAuthenticated()]
-
         return [permissions.AllowAny()]
 
     @action(methods=['get'], url_name='current-user', detail=False)
@@ -41,10 +47,10 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
     serializer_class = PostDetailsSerializer
     permission_classes = [permissions.AllowAny]
 
-    def get_permissions(self):
-        if self.action in ['add_comment']:
-            return [permissions.IsAuthenticated]
-        return self.permission_classes
+    # def get_permissions(self):
+    #     if self.action in ['add_comment']:
+    #         return [permissions.IsAuthenticated]
+    #     return self.permission_classes
 
     def get_queryset(self):
         queries = self.queryset
@@ -53,6 +59,15 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
         if q:
             queries = queries.filter(subject__icontains=q)
         return queries
+
+    @action(methods=['get'], detail=True)
+    def comments(self, request, pk):
+        post = self.get_object()
+        comment = post.comment_set.filter(active=True).all()
+
+        return Response(CommentSerializer(comment, many=True,
+                                          context={'request': request}).data,
+                        status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def create_post(self, request, pk):
@@ -66,7 +81,7 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
             return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['post'], url_path='comments', detail=True)
+    @action(methods=['post'], url_path='add_comment', detail=True)
     def add_comment(self, request, pk):
         comment = Comment.objects.create(user=request.user, post=self.get_object(),
                                          comment=request.data.get('comment'))
@@ -117,7 +132,6 @@ class LikeTypeListAPIView(generics.ListCreateAPIView):
 class LikeTypeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LikeType.objects.all()
     serializer_class = LikeTypeSerializer
-
 
 # membership1 = Membership.objects.create(group_name='default')
 # membership2 = Membership.objects.create(group_name='Cuu sinh vien 2020')
