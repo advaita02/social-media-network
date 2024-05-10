@@ -6,6 +6,7 @@ from .models import LikeType, Post, User, Comment, Like
 
 class UserSerializer(ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
+    cover_photo_url = serializers.SerializerMethodField()
 
     def get_avatar_url(self, obj):
         if obj.avatar:
