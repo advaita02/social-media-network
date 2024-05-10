@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status, generics, parsers
-from rest_framework.decorators import action, api_view
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import action, api_view, authentication_classes
 from rest_framework.response import Response
 from .models import LikeType, Post, Comment, Like, User, Membership, PostType
 from .serializers import (LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer,
@@ -47,11 +48,6 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
     serializer_class = PostDetailsSerializer
     permission_classes = [permissions.AllowAny]
 
-    # def get_permissions(self):
-    #     if self.action in ['add_comment']:
-    #         return [permissions.IsAuthenticated]
-    #     return self.permission_classes
-
     def get_queryset(self):
         queries = self.queryset
 
@@ -69,6 +65,8 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
                                           context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
+    @api_view(['POST'])
+    @authentication_classes([TokenAuthentication])
     @action(detail=True, methods=['post'])
     def create_post(self, request, pk):
         serializer = PostSerializer(data=request.data)
@@ -93,13 +91,11 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
                                                    post=self.get_object())
         if not created:
             like.active = not like.active
-            like.save()
-
-        like_type_name = request.data.get('like_type_name', None)
-        # None ở đây là giá trị mặc định nếu không có kiểu like
-        if like_type_name:
-            like_type, _ = LikeType.objects.get_or_create(name_type=like_type_name)
-            like.type_of_like = like_type
+            like_type_name = request.data.get('like_type_name', None)
+            # None ở đây là giá trị mặc định nếu không có kiểu like
+            if like_type_name:
+                like_type, _ = LikeType.objects.get_or_create(name_type=like_type_name)
+                like.type_of_like = like_type
             like.save()
 
         return Response(PostDetailsSerializer(self.get_object(), context={
