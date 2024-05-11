@@ -1,11 +1,13 @@
 from django.shortcuts import render
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, permissions, status, generics, parsers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action, api_view, authentication_classes
 from rest_framework.response import Response
 from .models import LikeType, Post, Comment, Like, User, Membership, PostType
 from .serializers import (LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer,
-                          UserSerializer, PostDetailsSerializer, UserProfileSerializer)
+                          UserSerializer, PostDetailsSerializer, UserProfileSerializer, CommentCreateSerializer)
 from .perms import OwnerPermission
 from django.shortcuts import get_object_or_404
 
@@ -43,10 +45,14 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
 
 
 class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
-                  generics.RetrieveAPIView, generics.UpdateAPIView):
+                  generics.RetrieveAPIView, generics.UpdateAPIView, generics.CreateAPIView):
     queryset = Post.objects.filter(active=True).all()
     serializer_class = PostDetailsSerializer
-    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.action in ['add_comment', 'liked', 'create_post']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def get_queryset(self):
         queries = self.queryset
@@ -65,25 +71,13 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
                                           context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
-    @api_view(['POST'])
-    @authentication_classes([TokenAuthentication])
-    @action(detail=True, methods=['post'])
-    def create_post(self, request, pk):
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            if not request.user.is_authenticated:
-                return Response({"message": "User is not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
-
-            serializer.validated_data['created_by'] = request.user
-            post = serializer.save()
-            return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(methods=['post'], url_path='add_comment', detail=True)
+    @action(methods=['post'], detail=True, url_path='add_comment')
     def add_comment(self, request, pk):
-        comment = Comment.objects.create(user=request.user, post=self.get_object(),
-                                         comment=request.data.get('comment'))
-        return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
+        comment = Comment.objects.create(user=request.user, post=self.get_object(), comment=request.data.get('comment'))
+        comment.save()
+        return Response(CommentSerializer(comment, context={
+            'request': request
+        }).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], url_path='like', detail=True)
     def add_like(self, request, pk):
@@ -103,8 +97,18 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
         }).data, status=status.HTTP_200_OK)
 
 
-class CommentViewSet(viewsets.ModelViewSet, generics.DestroyAPIView,
-                     generics.UpdateAPIView, generics.RetrieveAPIView):
+class PostCreateAPIView(viewsets.ViewSet):
+    serializer_class = PostSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [OwnerPermission]
@@ -119,15 +123,6 @@ class LikeTypeViewSet(viewsets.ModelViewSet):
     queryset = LikeType.objects.all()
     serializer_class = LikeTypeSerializer
 
-
-class LikeTypeListAPIView(generics.ListCreateAPIView):
-    queryset = LikeType.objects.all()
-    serializer_class = LikeTypeSerializer
-
-
-class LikeTypeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = LikeType.objects.all()
-    serializer_class = LikeTypeSerializer
 
 # membership1 = Membership.objects.create(group_name='default')
 # membership2 = Membership.objects.create(group_name='Cuu sinh vien 2020')

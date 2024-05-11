@@ -86,6 +86,7 @@ class Post(BaseModel):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_query_name='users')
     membership = models.ManyToManyField(Membership, related_name='membership_posts', blank=True)
+    is_comment = models.BooleanField(default=True) # mở/khoá comment
 
     def __str__(self):
         return self.title
