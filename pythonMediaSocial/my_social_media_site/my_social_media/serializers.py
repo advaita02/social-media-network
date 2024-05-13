@@ -156,10 +156,10 @@ class SurveySerializer(ModelSerializer):
 class QuestionSerializer(ModelSerializer):
     class Meta:
         model = Question
-        fields = '__all__'
+        fields = ['id', 'content']
 
 
 class AnswerSerializer(ModelSerializer):
     class Meta:
-        model = Question
+        model = Answer
         fields = '__all__'
