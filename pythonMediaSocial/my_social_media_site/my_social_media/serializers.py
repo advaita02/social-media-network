@@ -100,7 +100,7 @@ class PostSerializer(ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'type_of_post']
+        fields = ['id', 'title', 'content', 'type_of_post', 'created_by']
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -133,6 +133,11 @@ class PostDetailsSerializer(PostSerializer):
             return post.like_set.filter(active=True).exists()
         return False
 
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['created_by'] = user
+        return Post.objects.create(**validated_data)
+
     class Meta:
         model = Post
         fields = PostSerializer.Meta.fields + ['liked']
@@ -146,11 +151,6 @@ class SurveySerializer(ModelSerializer):
     class Meta:
         model = Survey
         fields = ['id', 'title', 'description', 'created_date', 'updated_date', 'active', 'created_by']
-
-    # def create(self, validated_data):
-    #     user = self.context['request'].user
-    #     validated_data['created_by'] = user
-    #     return Post.objects.create(**validated_data)
 
 
 class QuestionSerializer(ModelSerializer):
