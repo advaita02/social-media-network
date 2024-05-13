@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
-from .models import LikeType, Post, User, Comment, Like
+from .models import LikeType, Post, User, Comment, Like, Survey, Answer, Question
 
 
 class UserSerializer(ModelSerializer):
@@ -55,20 +55,6 @@ class LikeSerializer(ModelSerializer):
         fields = ['user', 'type_of_like']
 
 
-# class UserPostLikeSerializer(ModelSerializer):
-#     avatar_url = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = User
-#         fields = ['id', 'first_name', 'last_name', 'avatar_url']
-#
-#     def get_avatar_url(self, obj):
-#         if obj.avatar:
-#             avatar_url = obj.avatar.url
-#             return avatar_url
-#         else:
-#             return None
-
 class UserInPostSerializer(ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
 
@@ -109,6 +95,7 @@ class UserProfileSerializer(ModelSerializer):
 
 class PostSerializer(ModelSerializer):
     created_by = UserInPostSerializer()
+
     # posts_likes = LikeSerializer(source='post_likes', many=True)
 
     class Meta:
@@ -149,3 +136,30 @@ class PostDetailsSerializer(PostSerializer):
     class Meta:
         model = Post
         fields = PostSerializer.Meta.fields + ['liked']
+
+
+# Dưới đây là cho chức năng Survey
+
+class SurveySerializer(ModelSerializer):
+    created_by = UserInPostSerializer()
+
+    class Meta:
+        model = Survey
+        fields = ['id', 'title', 'description', 'created_date', 'updated_date', 'active', 'created_by']
+
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     validated_data['created_by'] = user
+    #     return Post.objects.create(**validated_data)
+
+
+class QuestionSerializer(ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+
+class AnswerSerializer(ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'

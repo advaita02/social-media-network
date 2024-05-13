@@ -9,6 +9,9 @@ router.register('posts', views.PostViewSet)
 router.register('users', views.UserViewSet)
 router.register('likes', views.LikeViewSet)
 router.register('comments', views.CommentViewSet)
+router.register('surveys', views.SurveyViewSet)
+router.register('questions', views.QuestionViewSet)
+# router.register('answers', views.AnswerViewSet)
 
 urlpatterns = [
     path('', include(router.urls))

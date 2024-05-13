@@ -5,9 +5,10 @@ from rest_framework import viewsets, permissions, status, generics, parsers
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action, api_view, authentication_classes
 from rest_framework.response import Response
-from .models import LikeType, Post, Comment, Like, User, Membership, PostType
+from .models import LikeType, Post, Comment, Like, User, Membership, PostType, Survey, Question, Answer
 from .serializers import (LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer,
-                          UserSerializer, PostDetailsSerializer, UserProfileSerializer, CommentCreateSerializer)
+                          UserSerializer, PostDetailsSerializer, UserProfileSerializer,
+                          CommentCreateSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer)
 from .perms import OwnerPermission
 from django.shortcuts import get_object_or_404
 
@@ -73,7 +74,8 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
 
     @action(methods=['post'], detail=True, url_path='add_comment')
     def add_comment(self, request, pk):
-        comment = Comment.objects.create(user=request.user, post=self.get_object(), comment=request.data.get('comment'))
+        comment = Comment.objects.create(user=request.user,
+                                         post=self.get_object(), comment=request.data.get('comment'))
         comment.save()
         return Response(CommentSerializer(comment, context={
             'request': request
@@ -114,53 +116,44 @@ class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateA
     permission_classes = [OwnerPermission]
 
 
-class LikeViewSet(viewsets.ModelViewSet):
+class LikeViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
 
-class LikeTypeViewSet(viewsets.ModelViewSet):
+class LikeTypeViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = LikeType.objects.all()
     serializer_class = LikeTypeSerializer
 
 
-# membership1 = Membership.objects.create(group_name='default')
-# membership2 = Membership.objects.create(group_name='Cuu sinh vien 2020')
-#
-# post_type1 = PostType.objects.create(name_type='Bao cao')
-# post_type2 = PostType.objects.create(name_type='default')
-#
-# like_type1 = LikeType.objects.create(name_type='like')
-# like_type2 = LikeType.objects.create(name_type='love')
-# #
-# user1 = User.objects.create(username='userNam', email='userNam@gmail.com')
-# user1.set_password('123456')
-# user1.save()
-#
-# user2 = User.objects.create(username='userTuan', email='userTuan@gmail.com')
-# user2.set_password('123456')
-# user2.save()
-#
-# post1 = Post.objects.create(
-#     title='Python da loi thoi',
-#     content='Vi no qua don gian va phuc tap',
-#     type_of_post=post_type1,
-#     created_by=user1
-# )
-#
-# post2 = Post.objects.create(
-#     title='Python la ngon ngu tuong lai the gioi',
-#     content='Vi la ngon ngu tuong lai nen can tao clb bat tran.',
-#     type_of_post=post_type2,
-#     created_by=user2
-# )
-#
-# post1.membership.add(membership1)
-# post1.membership.add(membership2)
-# post2.membership.add(membership1)
-#
-# like = Like.objects.create(
-#     user=user1,
-#     post=post1,
-#     type_of_like=like_type1
-# )
+class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+
+    # def get_permissions(self):
+    #     if self.action in ['add_survey']:
+    #         return [permissions.IsAuthenticated()]
+    #     return [permissions.AllowAny()]
+
+    @action(methods=['get'], detail=True)
+    def get_question(self, request, pk):
+        survey = self.get_object()
+        question = survey.question_set.filter().all()
+
+        return Response(QuestionSerializer(question, many=True, context={
+            'request': request
+        }).data, status=status.HTTP_200_OK)
+
+
+class QuestionViewSet(viewsets.ViewSet, generics.UpdateAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+    @action(methods=['get'], detail=True)
+    def get_answer(self, request, pk):
+        question = self.get_object()
+        answer = question.answer_set.filter().all()
+
+        return Response(AnswerSerializer(answer, many=True, context={
+            'request': request
+        }).data, status=status.HTTP_200_OK)
