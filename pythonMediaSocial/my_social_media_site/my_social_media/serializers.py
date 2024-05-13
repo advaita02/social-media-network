@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
-from .models import LikeType, Post, User, Comment, Like
+from .models import LikeType, Post, User, Comment, Like, Survey, Answer, Question
 
 
 class UserSerializer(ModelSerializer):
@@ -24,7 +24,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar_url',
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar_url',
                   'cover_photo_url']
         extra_kwargs = {
             'password': {
@@ -55,21 +55,7 @@ class LikeSerializer(ModelSerializer):
         fields = ['user', 'type_of_like']
 
 
-# class UserPostLikeSerializer(ModelSerializer):
-#     avatar_url = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = User
-#         fields = ['id', 'first_name', 'last_name', 'avatar_url']
-#
-#     def get_avatar_url(self, obj):
-#         if obj.avatar:
-#             avatar_url = obj.avatar.url
-#             return avatar_url
-#         else:
-#             return None
-
-class UserInPost(ModelSerializer):
+class UserInPostSerializer(ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -108,27 +94,38 @@ class UserProfileSerializer(ModelSerializer):
 
 
 class PostSerializer(ModelSerializer):
-    created_by = UserInPost()
+    created_by = UserInPostSerializer()
+
     # posts_likes = LikeSerializer(source='post_likes', many=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'created_by', 'type_of_post']
+        fields = ['id', 'title', 'content', 'type_of_post']
 
     def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['created_by'] = user
         return Post.objects.create(**validated_data)
 
 
-class CommentSerializer(ModelSerializer):  # chỉnh lại chỗ này theo ('id', 'comment', 'user_id')
-    user = UserInPost()
+class CommentSerializer(ModelSerializer):
+    user = UserInPostSerializer()
 
     class Meta:
         model = Comment
-        fields = ['id', 'comment', 'user']
+        fields = ['id', 'comment', 'user', 'created_date', 'updated_date']
+        ordering = ['-id']
+
+
+class CommentCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['comment']
 
 
 class PostDetailsSerializer(PostSerializer):
     liked = serializers.SerializerMethodField()
+    created_by = UserInPostSerializer()
 
     def get_liked(self, post):
         request = self.context.get('request')
@@ -139,3 +136,30 @@ class PostDetailsSerializer(PostSerializer):
     class Meta:
         model = Post
         fields = PostSerializer.Meta.fields + ['liked']
+
+
+# Dưới đây là cho chức năng Survey
+
+class SurveySerializer(ModelSerializer):
+    created_by = UserInPostSerializer()
+
+    class Meta:
+        model = Survey
+        fields = ['id', 'title', 'description', 'created_date', 'updated_date', 'active', 'created_by']
+
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     validated_data['created_by'] = user
+    #     return Post.objects.create(**validated_data)
+
+
+class QuestionSerializer(ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+
+class AnswerSerializer(ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
