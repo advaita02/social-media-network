@@ -44,7 +44,7 @@ class UserSerializer(ModelSerializer):
 class LikeTypeSerializer(ModelSerializer):
     class Meta:
         model = LikeType
-        fields = ['name_type']
+        fields = ['id', 'name_type']
 
 
 class LikeSerializer(ModelSerializer):
@@ -52,7 +52,7 @@ class LikeSerializer(ModelSerializer):
 
     class Meta:
         model = Like
-        fields = ['user', 'type_of_like']
+        fields = ['user', 'type_of_like', 'post', 'active']
 
 
 class UserInPostSerializer(ModelSerializer):
