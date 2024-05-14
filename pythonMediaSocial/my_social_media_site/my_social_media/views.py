@@ -158,3 +158,19 @@ class QuestionViewSet(viewsets.ViewSet, generics.UpdateAPIView):
         return Response(AnswerSerializer(answer, many=True, context={
             'request': request
         }).data, status=status.HTTP_200_OK)
+
+
+class AnswerViewSet(viewsets.ViewSet, generics.RetrieveUpdateAPIView):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer
+
+    @action(detail=True, methods=['patch'])
+    def plus_quantity(self, request, pk=None):
+        answer = self.get_object()
+        answer.quantity += 1
+        answer.save()
+        serializer = self.get_serializer(answer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
