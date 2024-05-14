@@ -7,7 +7,7 @@ from django import forms
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    list_display = ('username', 'email', 'date_joined', 'is_staff')
+    list_display = ('username', 'email', 'date_joined', 'is_staff', 'is_active')
     search_fields = ('username', 'email')
     filter_horizontal = ()
     fieldsets = (

@@ -232,3 +232,12 @@ class AnswerViewSet(viewsets.ViewSet, generics.RetrieveUpdateAPIView):
         answer.save()
         serializer = self.get_serializer(answer)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# class RegistrationViewSet(viewsets.ViewSet):
+#     def create(self, request):
+#         serializer = UserSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

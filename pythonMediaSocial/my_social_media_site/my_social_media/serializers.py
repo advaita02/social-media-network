@@ -4,6 +4,12 @@ from rest_framework.serializers import ModelSerializer
 from .models import LikeType, Post, User, Comment, Like, Survey, Answer, Question
 
 
+from django.contrib.auth.models import User
+
+from rest_framework import serializers
+from django.contrib.auth.models import User
+
+
 class UserSerializer(ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
     cover_photo_url = serializers.SerializerMethodField()
@@ -33,9 +39,8 @@ class UserSerializer(ModelSerializer):
         }
 
     def create(self, validated_data):
-        data = validated_data.copy()
-        user = User(**data)
-        user.set_password(data['password'])
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
         user.save()
 
         return user
@@ -163,4 +168,3 @@ class AnswerSerializer(ModelSerializer):
     class Meta:
         model = Answer
         fields = '__all__'
-
