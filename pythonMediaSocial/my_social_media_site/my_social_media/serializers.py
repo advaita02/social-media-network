@@ -94,13 +94,13 @@ class UserProfileSerializer(ModelSerializer):
 
 
 class PostSerializer(ModelSerializer):
-    created_by = UserInPostSerializer()
+    # created_by = UserInPostSerializer()
 
     # posts_likes = LikeSerializer(source='post_likes', many=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'type_of_post', 'created_by']
+        fields = ['id', 'title', 'content', 'type_of_post']
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -133,14 +133,14 @@ class PostDetailsSerializer(PostSerializer):
             return post.like_set.filter(active=True).exists()
         return False
 
-    def create(self, validated_data):
-        user = self.context['request'].user
-        validated_data['created_by'] = user
-        return Post.objects.create(**validated_data)
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     validated_data['created_by'] = user
+    #     return Post.objects.create(**validated_data)
 
     class Meta:
         model = Post
-        fields = PostSerializer.Meta.fields + ['liked']
+        fields = PostSerializer.Meta.fields + ['liked'] + ['created_by']
 
 
 # Dưới đây là cho chức năng Survey
