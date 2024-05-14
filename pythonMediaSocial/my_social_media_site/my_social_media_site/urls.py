@@ -8,11 +8,11 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Course API",
+        title="Mạng xã hội sanh viên",
         default_version='v1',
-        description="APIs for CourseApp",
-        contact=openapi.Contact(email="thanh.dh@ou.edu.vn"),
-        license=openapi.License(name="Dương Hữu Thành@2021"),
+        description="APIs for Sinh viên mạng xã hội kì cựu",
+        contact=openapi.Contact(email="TuanNamCS@admin.com"),
+        license=openapi.License(name="Tuấn-Nam@2024"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),

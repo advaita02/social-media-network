@@ -52,7 +52,7 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
     permission_classes = [OwnerPermission]
 
     def get_permissions(self):
-        if self.action in ['add_comment', 'liked', 'create_post']:
+        if self.action in ['add_comment', 'like', 'unlike', 'update_like', 'create_post']:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
@@ -78,6 +78,15 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
                                           context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
+    @action(methods=['get'], detail=True)
+    def likes(self, request, pk):
+        post = self.get_object()
+        like = post.like_set.filter().all()
+
+        return Response(LikeSerializer(like, many=True, context={
+            'request': request
+        }).data, status=status.HTTP_200_OK)
+
     @action(methods=['post'], detail=True, url_path='add_comment')
     def add_comment(self, request, pk):
         comment = Comment.objects.create(user=request.user,
@@ -87,22 +96,73 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
             'request': request
         }).data, status=status.HTTP_201_CREATED)
 
-    @action(methods=['post'], url_path='like', detail=True)
-    def add_like(self, request, pk):
-        like, created = Like.objects.get_or_create(user=request.user,
-                                                   post=self.get_object())
+    @action(methods=['post'], detail=True)
+    def like(self, request, pk):
+        post = self.get_object()
+        type_of_like_id = request.data.get('type_of_like')
+
+        # Kiểm tra xem type_of_like có được cung cấp hay không
+        if not type_of_like_id:
+            return Response({"detail": "type_of_like is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Kiểm tra xem type_of_like có tồn tại hay không
+        try:
+            type_of_like = LikeType.objects.get(id=type_of_like_id)
+        except LikeType.DoesNotExist:
+            return Response({"detail": "type_of_like not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        like, created = Like.objects.get_or_create(user=request.user, post=post,
+                                                   defaults={'type_of_like': type_of_like})
+
         if not created:
             like.active = not like.active
-            like_type_name = request.data.get('like_type_name', None)
-            # None ở đây là giá trị mặc định nếu không có kiểu like
-            if like_type_name:
-                like_type, _ = LikeType.objects.get_or_create(name_type=like_type_name)
-                like.type_of_like = like_type
+            like.type_of_like = type_of_like  # Cập nhật type_of_like nếu cần
             like.save()
 
-        return Response(PostDetailsSerializer(self.get_object(), context={
-            'request': request
-        }).data, status=status.HTTP_200_OK)
+        return Response(PostDetailsSerializer(post, context={'request': request}).data, status=status.HTTP_200_OK)
+
+    @action(methods=['patch'], detail=True, url_path='unlike')
+    def unlike(self, request, pk):
+        post = self.get_object()
+        user = request.user
+
+        try:
+            like = Like.objects.get(user=user, post=post)
+        except Like.DoesNotExist:
+            return Response({"detail": "Like not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        like.active = False
+        like.save()
+
+        return Response({"detail": "Like deactivated.", "active": like.active}, status=status.HTTP_200_OK)
+
+    @action(methods=['patch'], detail=True, url_path='update_like')
+    def update_like(self, request, pk):
+        post = self.get_object()
+        user = request.user
+        type_of_like_id = request.data.get('type_of_like')
+
+        if not type_of_like_id:
+            return Response({"detail": "type_of_like is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            type_of_like = LikeType.objects.get(id=type_of_like_id)
+        except LikeType.DoesNotExist:
+            return Response({"detail": "type_of_like not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            like = Like.objects.get(user=user, post=post)
+        except Like.DoesNotExist:
+            return Response({"detail": "Like not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if not like.active:
+            like.active = True
+
+        like.type_of_like = type_of_like
+        like.save()
+
+        return Response({"detail": "Like type updated.", "type_of_like": like.type_of_like.id},
+                        status=status.HTTP_200_OK)
 
 
 class PostCreateAPIView(viewsets.ViewSet, generics.CreateAPIView):
