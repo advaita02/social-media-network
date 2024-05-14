@@ -46,9 +46,10 @@ class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
 
 
 class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
-                  generics.RetrieveAPIView, generics.UpdateAPIView, generics.CreateAPIView):
+                  generics.RetrieveAPIView, generics.UpdateAPIView, generics.CreateAPIView, generics.DestroyAPIView):
     queryset = Post.objects.filter(active=True).all()
     serializer_class = PostDetailsSerializer
+    permission_classes = [OwnerPermission]
 
     def get_permissions(self):
         if self.action in ['add_comment', 'liked', 'create_post']:
@@ -171,6 +172,3 @@ class AnswerViewSet(viewsets.ViewSet, generics.RetrieveUpdateAPIView):
         answer.save()
         serializer = self.get_serializer(answer)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
