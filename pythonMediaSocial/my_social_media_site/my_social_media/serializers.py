@@ -4,12 +4,6 @@ from rest_framework.serializers import ModelSerializer
 from .models import LikeType, Post, User, Comment, Like, Survey, Answer, Question
 
 
-from django.contrib.auth.models import User
-
-from rest_framework import serializers
-from django.contrib.auth.models import User
-
-
 class UserSerializer(ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
     cover_photo_url = serializers.SerializerMethodField()
@@ -31,7 +25,7 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar_url',
-                  'cover_photo_url']
+                  'cover_photo_url', 'password']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -168,3 +162,22 @@ class AnswerSerializer(ModelSerializer):
     class Meta:
         model = Answer
         fields = '__all__'
+
+
+class UserRegisterSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar',
+                  'cover_photo', 'password']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
+
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+
+        return user

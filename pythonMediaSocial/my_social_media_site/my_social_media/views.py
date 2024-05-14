@@ -7,7 +7,7 @@ from rest_framework.decorators import action, api_view, authentication_classes
 from rest_framework.response import Response
 from .models import LikeType, Post, Comment, Like, User, Membership, PostType, Survey, Question, Answer
 from .serializers import (LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer,
-                          UserSerializer, PostDetailsSerializer, UserProfileSerializer,
+                          UserSerializer, PostDetailsSerializer, UserProfileSerializer, UserRegisterSerializer,
                           CommentCreateSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer)
 from .perms import OwnerPermission
 from django.shortcuts import get_object_or_404
@@ -16,8 +16,12 @@ from django.shortcuts import get_object_or_404
 # from my_social_media import serializers
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     parser_classes = [parsers.MultiPartParser]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserRegisterSerializer
+        return UserSerializer
 
     @action(detail=True)
     #  xem profile user
@@ -232,12 +236,3 @@ class AnswerViewSet(viewsets.ViewSet, generics.RetrieveUpdateAPIView):
         answer.save()
         serializer = self.get_serializer(answer)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-# class RegistrationViewSet(viewsets.ViewSet):
-#     def create(self, request):
-#         serializer = UserSerializer(data=request.data)
-#         if serializer.is_valid():
-#             user = serializer.save()
-#             return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
