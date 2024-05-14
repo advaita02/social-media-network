@@ -25,7 +25,7 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar_url',
-                  'cover_photo_url']
+                  'cover_photo_url', 'password']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -33,9 +33,8 @@ class UserSerializer(ModelSerializer):
         }
 
     def create(self, validated_data):
-        data = validated_data.copy()
-        user = User(**data)
-        user.set_password(data['password'])
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
         user.save()
 
         return user
@@ -164,3 +163,21 @@ class AnswerSerializer(ModelSerializer):
         model = Answer
         fields = '__all__'
 
+
+class UserRegisterSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'date_of_birth', 'number_phone', 'avatar',
+                  'cover_photo', 'password']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
+
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+
+        return user

@@ -7,7 +7,7 @@ from rest_framework.decorators import action, api_view, authentication_classes
 from rest_framework.response import Response
 from .models import LikeType, Post, Comment, Like, User, Membership, PostType, Survey, Question, Answer
 from .serializers import (LikeTypeSerializer, PostSerializer, CommentSerializer, LikeSerializer,
-                          UserSerializer, PostDetailsSerializer, UserProfileSerializer,
+                          UserSerializer, PostDetailsSerializer, UserProfileSerializer, UserRegisterSerializer,
                           CommentCreateSerializer, SurveySerializer, QuestionSerializer, AnswerSerializer)
 from .perms import OwnerPermission
 from django.shortcuts import get_object_or_404
@@ -16,8 +16,12 @@ from django.shortcuts import get_object_or_404
 # from my_social_media import serializers
 class UserViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     parser_classes = [parsers.MultiPartParser]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserRegisterSerializer
+        return UserSerializer
 
     @action(detail=True)
     #  xem profile user
