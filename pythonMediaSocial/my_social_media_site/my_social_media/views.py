@@ -55,6 +55,11 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return PostSerializer
+        return PostDetailsSerializer
+
     def get_queryset(self):
         queries = self.queryset
 
@@ -99,15 +104,16 @@ class PostViewSet(viewsets.ViewSet, generics.ListAPIView,
         }).data, status=status.HTTP_200_OK)
 
 
-class PostCreateAPIView(viewsets.ViewSet):
+class PostCreateAPIView(viewsets.ViewSet, generics.CreateAPIView):
+    queryset = Post.objects.filter(active=True).all()
     serializer_class = PostSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, *args, **kwargs):
+    #     serializer = self.serializer_class(data=request.data, context={'request': request})
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
@@ -129,11 +135,6 @@ class LikeTypeViewSet(viewsets.ViewSet, generics.ListAPIView):
 class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Survey.objects.all()
     serializer_class = SurveySerializer
-
-    # def get_permissions(self):
-    #     if self.action in ['add_survey']:
-    #         return [permissions.IsAuthenticated()]
-    #     return [permissions.AllowAny()]
 
     @action(methods=['get'], detail=True)
     def get_question(self, request, pk):
