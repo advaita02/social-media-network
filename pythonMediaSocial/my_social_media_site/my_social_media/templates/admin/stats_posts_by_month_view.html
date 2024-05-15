@@ -1,0 +1,68 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Stats by Month</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Post Stats by Month</h1>
+
+    <!-- form chọn năm -->
+    <form method="get" action="">
+        {% csrf_token %}
+        {{ year_form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+
+    <div style="top:60px; left:10px; width:500px; height:500px;">
+
+    <canvas id="postChart" width="800" height="400"></canvas>
+
+    <script>
+        // django context và chuyển đổi sang JavaScript
+        var postsByMonth = JSON.parse('{{ posts_by_month_json|escapejs }}');
+
+        // mảng năm
+        var years = [];
+        // mảng số lượng
+        var postsCounts = [];
+
+        // lặp qua dữ liệu từ django context và tạo mảng các năm và số lượng bài đăng
+        postsByMonth.forEach(function(stat) {
+            years.push(stat.year + '-' + stat.month);
+            postsCounts.push(stat.count);
+        });
+
+        // chartjs
+        var ctx = document.getElementById('postChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Number of Posts',
+                    data: postsCounts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {stepSize:1}
+                    },
+                }
+            }
+        });
+    </script>
+    </div>
+</body>
+</html>
+{% endblock %}

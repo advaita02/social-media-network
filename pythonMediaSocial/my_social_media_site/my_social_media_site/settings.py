@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'drf_yasg',
     'rest_framework',
-    'oauth2_provider'
+    'oauth2_provider',
+    'adminplus',
 ]
 
 REST_FRAMEWORK = {

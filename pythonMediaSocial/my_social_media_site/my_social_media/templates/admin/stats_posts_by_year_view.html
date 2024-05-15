@@ -1,0 +1,90 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<h1>Thống kê bài đăng theo năm</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Năm</th>
+        <th>Số bài đăng</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for stat in posts_by_year_stats %}
+    <tr>
+        <td>{{ stat.year }}</td>
+        <td>{{ stat.count }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div style="top:60px; left:10px; width:500px; height:500px;">
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let labels = [];
+    let values = [];
+
+    {% for stat in posts_by_year_stats %}
+    values.push({{ stat.count }})
+    labels.push({{ stat.year }})
+    {% endfor %}
+
+    window.onload = () => {
+        const ctx = document.getElementById('myChart');
+        ctx.setAttribute('width', '10');
+        ctx.setAttribute('height', '5');
+
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Số bài đăng',
+              data: values,
+              backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)'
+              ],
+              borderWidth: 1
+            }]
+          },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {stepSize:1}
+                },
+                x: {
+                    grid: {
+                        drawBorder: false,
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            layout: {
+                padding: {
+                    left: 30,
+                    right: 30,
+                    top: 30,
+                    bottom: 30
+                }
+            }
+        }
+        });
+    }
+</script>
+</div>
+{% endblock %}
