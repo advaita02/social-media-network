@@ -5,11 +5,14 @@ Link github phần backend để tham khảo: https://github.com/advaita02/socia
 
 Cài ứng dụng:
 - Sử dụng git bash, gõ lệnh: 
-            git clone https://github.com/anhtuan05/socialMediaNetworkReactNative.git
+```bash
+git clone https://github.com/anhtuan05/socialMediaNetworkReactNative.git
+```
 
-- Mở file vừa clone về bằng visual studio code, vào phần terminal, nhập lệnh:
-            npm start
-
+- Project React Native dùng npm để quản lý packages:
+```bash
+npm start
+```
 Tại đây có 2 trường hợp: mở trên thiết bị thật và thiết bị ảo.
 1. Thiết bị ảo:
 -	Khởi động máy ảo: Android Virtual Device
